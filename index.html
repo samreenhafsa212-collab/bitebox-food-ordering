@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BiteBox | Order food online</title>
+<style>
+:root{--navy:#142f42;--orange:#e76f35;--cream:#fbf8f3;--ink:#20303a;--muted:#6c7a82;--line:#e4e8e8}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,system-ui,Arial,sans-serif}.nav{background:white;border-bottom:1px solid var(--line);padding:17px max(18px,calc((100% - 1120px)/2));display:flex;justify-content:space-between;align-items:center}.brand{font-size:23px;font-weight:900;color:var(--navy)}.brand span{color:var(--orange)}.nav a{color:var(--navy);text-decoration:none;font-weight:700}main{max-width:1120px;margin:auto;padding:26px 18px 60px}.hero{border-radius:26px;background:var(--navy);color:white;padding:clamp(28px,5vw,60px);display:grid;grid-template-columns:1fr 220px;align-items:center;gap:20px}.hero h1{font-size:clamp(38px,6vw,64px);line-height:1;margin:0 0 15px;letter-spacing:-2px}.hero h1 span{color:#ffb88d}.hero p{color:#d9e5ea;line-height:1.7}.hero-art{font-size:130px;text-align:center}.layout{display:grid;grid-template-columns:1fr 340px;gap:22px;margin-top:35px;align-items:start}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.card,.panel{background:white;border:1px solid var(--line);border-radius:17px;overflow:hidden}.art{height:120px;display:grid;place-items:center;background:#f6e2d2;font-size:65px}.card:nth-child(2) .art{background:#e2eee4}.card:nth-child(3) .art{background:#f6e8ba}.card:nth-child(4) .art{background:#dfeaf4}.card:nth-child(5) .art{background:#eedff0}.body{padding:15px}.body small{color:var(--muted)}h3{margin:7px 0 12px}.bottom{display:flex;justify-content:space-between;align-items:center;gap:8px}.price{font-size:18px;font-weight:900}.qty{display:flex;align-items:center;gap:9px}.qty button{border:1px solid var(--line);background:white;border-radius:8px;width:30px;height:30px;font-size:18px}.panel{padding:21px;position:sticky;top:15px}.panel h2{margin:0 0 7px}.field{display:block;font-size:12px;font-weight:800;margin-top:13px}.field input{width:100%;padding:11px;border:1px solid #d5dfe1;border-radius:9px;margin-top:5px;font:inherit}.total{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:16px;margin-top:17px;font-weight:900}.btn{width:100%;padding:13px;border:0;border-radius:10px;background:var(--orange);color:white;font-weight:900;font-size:15px;margin-top:15px;cursor:pointer}.btn:disabled{opacity:.5;cursor:wait}.muted{font-size:12px;color:var(--muted);line-height:1.6}.message{margin-top:12px;font-size:13px;color:#9b3228}.notice{background:#fff3dc;padding:12px;border-radius:10px;font-size:12px;line-height:1.6;margin-top:12px}@media(max-width:800px){.layout{grid-template-columns:1fr}.panel{position:static}.hero{grid-template-columns:1fr}.hero-art{font-size:85px}.grid{grid-template-columns:1fr}}@media(min-width:801px){.card{min-width:0}}
+</style>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script></head><body>
+<header class="nav"><div class="brand"><span>●</span> BiteBox</div><a href="/admin/login">Admin login</a></header>
+<main><section class="hero"><div><p style="letter-spacing:2px;color:#ffb88d;font-size:11px;font-weight:900">FRESH · SIMPLE · DELICIOUS</p><h1>Good food.<br><span>Good mood.</span></h1><p>Pick your favourites, place your order and pay securely online.</p></div><div class="hero-art">🍕</div></section>
+<div class="layout"><section><h2>Today's menu</h2><p class="muted">Prices in Indian rupees · Choose quantities below</p><div class="grid" id="menu">
+{% for f in menu %}<article class="card"><div class="art">{{f.emoji}}</div><div class="body"><small>{{f.category}} · {{f.description}}</small><h3>{{f.name}}</h3><div class="bottom"><span class="price">₹{{"%.2f"|format(f.price/100)}}</span><div class="qty"><button type="button" onclick="change({{f.id}},-1)">−</button><b id="q{{f.id}}">0</b><button type="button" onclick="change({{f.id}},1)">+</button></div></div></div></article>{% endfor %}
+</div></section>
+<aside class="panel"><h2>Your details</h2><p class="muted">Complete your details to continue to secure checkout.</p><form id="checkout">
+<label class="field">Full name<input id="name" maxlength="100" required autocomplete="name"></label>
+<label class="field">Email<input id="email" type="email" maxlength="150" required autocomplete="email"></label>
+<label class="field">Phone<input id="phone" type="tel" maxlength="20" autocomplete="tel"></label>
+<label class="field">Delivery address<input id="address" maxlength="255" required autocomplete="street-address"></label>
+<div class="total"><span>Total</span><span id="total">₹0.00</span></div><button class="btn" id="pay" type="submit">Continue to payment</button><div class="message" id="msg" role="status"></div>
+</form><div class="notice">Online payment is enabled only after the site owner configures a verified Razorpay account and secret keys. Do not enter card or UPI details anywhere except Razorpay Checkout.</div><p class="muted">Demo menu pricing. Actual food fulfilment, taxes, delivery charges and refund policies must be configured before launch.</p></aside></div></main>
+<script>
+const prices={ {% for f in menu %}{{f.id}}:{{f.price}},{% endfor %} };
+const names={ {% for f in menu %}{{f.id}}:{{f.name|tojson}},{% endfor %} };
+const qty={};Object.keys(prices).forEach(id=>qty[id]=0);
+function change(id,n){qty[id]=Math.max(0,Math.min(30,qty[id]+n));document.getElementById('q'+id).textContent=qty[id];document.getElementById('total').textContent='₹'+(Object.keys(qty).reduce((s,k)=>s+qty[k]*prices[k],0)/100).toFixed(2)}
+document.getElementById('checkout').addEventListener('submit',async e=>{
+ e.preventDefault();const items=Object.keys(qty).filter(id=>qty[id]>0).map(id=>({id:Number(id),quantity:qty[id]}));const msg=document.getElementById('msg'),btn=document.getElementById('pay');
+ if(!items.length){msg.textContent='Add at least one food item first.';return}
+ btn.disabled=true;msg.textContent='Preparing secure checkout…';
+ try{
+  const res=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('name').value,email:document.getElementById('email').value,phone:document.getElementById('phone').value,address:document.getElementById('address').value,items})});
+  const data=await res.json();if(!res.ok)throw new Error(data.error||'Could not start checkout.');
+  const rzp=new Razorpay({key:data.key_id,amount:data.amount,currency:data.currency,name:'BiteBox',description:data.description,order_id:data.razorpay_order_id,prefill:data.customer,theme:{color:'#e76f35'},
+   handler:async function(response){
+    msg.textContent='Verifying payment securely…';
+    try{const vr=await fetch('/api/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...response,order_id:data.order_id})});const vd=await vr.json();if(!vr.ok)throw new Error(vd.error||'Verification failed.');window.location.href='/order/'+data.order_id}
+    catch(err){msg.textContent=err.message+' Keep your payment receipt and contact support if money was debited.';btn.disabled=false}
+   },
+   modal:{ondismiss:function(){msg.textContent='Checkout closed. Your order is not confirmed until payment is verified.';btn.disabled=false}}
+  });rzp.on('payment.failed',function(resp){msg.textContent=resp.error?.description||'Payment failed. Please try again.';btn.disabled=false});rzp.open();
+ }catch(err){msg.textContent=err.message;btn.disabled=false}
+});
+</script></body></html>
